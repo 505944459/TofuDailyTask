@@ -3,7 +3,6 @@ package cn.ricetofu.task.core;
 import cn.ricetofu.task.mysql.MysqlManager;
 import cn.ricetofu.task.pojo.Task;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,15 +39,6 @@ public class DataManager {
      * @return 是否成功
      * */
     private static boolean syncLocalData(){
-        File file = new File("./tofu-task/task");
-
-        //读取任务文件夹下所有的文件,加载进任务类别之中
-        File[] files = file.listFiles();
-        for (File f : files) {
-
-
-
-        }
 
         return false;
     }
