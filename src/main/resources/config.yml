@@ -1,0 +1,17 @@
+# 豆腐任务系统插件 V1.0.0
+# 欢迎使用~~~~
+
+#插件的版本，这个设置一般自己不需要修改(修改可能会导致一些问题)
+version: 1.0.0
+
+#是否开启mysql数据库支持,true: 开启,false(默认): 关闭
+mysql: false
+#mysql设置，当开启数据库支持时生效
+#数据库地址
+mysql-host: 127.0.0.1:3306
+#数据库名称
+mysql-database: database_name
+#连接数据库的用户名
+mysql-username: root
+#连接数据库的密码
+mysql-password: 123456

@@ -1,0 +1,14 @@
+name: TofuTask
+version: '${project.version}'
+main: cn.ricetofu.task.TofuTask
+authors: [ RiceTofu123 ]
+description: 豆腐任务系统插件
+website: www.ricetofu.cn
+commands:
+  task:
+    description: 玩家默认指令，打开一个显示任务的GUI窗口
+    usage: /task
+  task-get:
+    description: 玩家接取任务的指令，需要玩家满足权限
+    usage: /task get <task-id>
+
