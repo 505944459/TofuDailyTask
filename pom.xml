@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.ricetofu.task</groupId>
-    <artifactId>Tofu-Task</artifactId>
+    <artifactId>Tofu-DailyTask</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>TofuTask</name>
 
-    <description>豆腐任务系统插件</description>
+    <description>豆腐每日任务系统插件</description>
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

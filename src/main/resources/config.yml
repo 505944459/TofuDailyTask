@@ -1,8 +1,21 @@
-# 豆腐任务系统插件 V1.0.0
+# 豆腐每日任务系统插件 V1.0.0
 # 欢迎使用~~~~
 
 #插件的版本，这个设置一般自己不需要修改(修改可能会导致一些问题)
 version: 1.0.0
+
+#每日任务的小任务个数 (1-9)
+tasks: 3
+
+#每日任务的小任务可以允许更换的次数，为-1则小任务可以更换无限次
+change-times: 3
+
+#每日任务的完成奖励
+rewards:
+  - command /give %player% 1 64
+  - item 1 64
+  - command /give %player%
+
 
 #是否开启mysql数据库支持,true: 开启,false(默认): 关闭
 mysql: false

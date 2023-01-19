@@ -1,0 +1,11 @@
+#给玩家发送消息的前缀
+message-prefix: §a[§b每日任务§a]§f：
+
+#完成一个小任务的提示，可以使用 %task_name%代表这个被完成的任务的名称
+task-finish-one: 你完成了一个每日任务:%task_name%
+
+#任务完成提示
+task-finished: 你成功完成了今天的每日任务，这是给你的奖励
+
+#获取奖励时背包空间不足的提示
+out-of-package: 你的背包空间不足!奖励帮你暂存在服务器啦~今日内使用/task reward即可获取
