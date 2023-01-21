@@ -44,14 +44,15 @@ public class PlayerTask {
      * */
     public void argsInit(String type){
         switch (task_type){
-
             case "break":
             case "place":
             case "get":
             case "kill":
-            {
+            case "eat":
+            case "craft":
+            case "destroy": {
                 String[] s = type.split(" ");
-                args.add(s[1]);//材料/方块/实体的id
+                args.add(s[1]);//材料/方块/实体……的id
                 args.add(s[2]);//需要完成的数量
                 args.add("0");//已经完成的数量
                 break;

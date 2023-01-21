@@ -47,3 +47,30 @@
     - 成功击杀%need%只姜丝
     - 你现在已经成功%finished%次
   type: kill zombie 3
+
+6:
+  name: 吃苹果
+  display: apple
+  weight: 100
+  lore:
+    - 吃掉%need%个苹果
+    - 你现在已经吃掉了%finished%个
+  type: eat apple 1
+
+7:
+  name: 合成金苹果
+  display: golden_apple
+  weight: 100
+  lore:
+    - 合成%need%个金苹果
+    - 你现在已经合成了%finished%个
+  type: craft golden_apple 3
+
+8:
+  name: 用坏一个打火石
+  display: flint_and_steel
+  weight: 100
+  lore:
+    - 玩坏%need%个打火石
+    - 你现在已经玩坏了%finished%个
+  type: destroy flint_and_steel 2

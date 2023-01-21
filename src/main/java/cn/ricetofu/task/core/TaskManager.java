@@ -215,14 +215,17 @@ public class TaskManager {
             switch (type){
                 case "break":
                 case "place":
-                case "get": {//破坏，放置，获取任务
+                case "get":
+                case "eat":
+                case "craft":
+                case "destroy": {//破坏，放置，获取，食用,合成,损坏任务
                     //参数长度校验
                     if(s.length!=3){
                         logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数个数错误!应为2个，实有"+(s.length-1)+"个");
                         wrong_tasks.add(k);
                         break;
                     }
-                    //参数一校验，是否存在那么一种方块
+                    //参数一校验，是否存在那么一种材料/方块
                     if(Material.matchMaterial(s[1])==null){
                         logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数1错误!无法匹配到一个名字/id为:"+s[1]+"的物品");
                         wrong_tasks.add(k);

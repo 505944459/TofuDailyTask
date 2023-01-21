@@ -138,7 +138,10 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
             case "kill":
             case "get":
             case "place":
-            case "break":{
+            case "break":
+            case "eat":
+            case "craft":
+            case "destroy":{
                 lore = lore.replaceAll("%need%",task.args.get(1));
                 lore = lore.replaceAll("%finished%",task.args.get(2));
                 break;
