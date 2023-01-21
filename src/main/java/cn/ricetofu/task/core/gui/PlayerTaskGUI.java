@@ -1,6 +1,8 @@
 package cn.ricetofu.task.core.gui;
 
+import cn.ricetofu.task.core.ConfigManager;
 import cn.ricetofu.task.core.PlayerDataManager;
+import cn.ricetofu.task.core.RewardManager;
 import cn.ricetofu.task.core.TaskManager;
 import cn.ricetofu.task.pojo.PlayerTask;
 import cn.ricetofu.task.pojo.SavedPlayerData;
@@ -23,6 +25,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.Skull;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -38,7 +41,7 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
             //打开一个箱子GUI
             openTaskGui((Player) sender);
         }
-        return false;
+        return true;
     }
 
     public void openTaskGui(Player player){
@@ -60,6 +63,28 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
         lore.add("§f累计完成次数:§a"+savedPlayerData.finished_times);
         headMeta.setLore(lore);
         head.setItemMeta(headMeta);//玩家头颅
+        inv.setItem(0,head);//放置头颅
+
+        //放置奖励领取箱子
+        ItemStack stack = new ItemStack(Material.CHEST);
+        ItemMeta cheat_meta = stack.getItemMeta();
+        cheat_meta.setDisplayName("§a每日任务奖励");
+        lore = new ArrayList<>();
+        lore.add("§a-------------------");
+        lore.add("§f奖励内容:");
+        for (String s : ConfigManager.rewards_lore) {
+            lore.add("   §f"+s);
+        }
+        lore.add("§a-------------------");
+        String state = "§b未知";
+        if(RewardManager.isRewardToday(player.getName()))state = "§a已领取";
+        else if(savedPlayerData.last_finished_date.equals(PlayerDataManager.sdf.format(new Date()))&&!RewardManager.isRewardToday(player.getName()))state = "§a可领取";
+        else state = "§c任务未完成";
+        lore.add("§a状态: "+state);
+        if(state.equals("§a可领取"))lore.add("§a点击这里来领取你的今日奖励~~~");
+        cheat_meta.setLore(lore);
+        stack.setItemMeta(cheat_meta);
+        inv.setItem(5*9 + 4,stack);
 
         ItemStack glass = new ItemStack(Material.STAINED_GLASS_PANE,1,(short) 0,(byte)3);//淡蓝色的玻璃板
         ItemMeta itemMeta = glass.getItemMeta();
@@ -67,12 +92,13 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
         glass.setItemMeta(itemMeta);
 
 
-        inv.setItem(0,head);//放置头颅
+
 
         //放置边界
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 9; j++) {
                 if(i==0&&j==0)continue;
+                if(i==5&&j==4)continue;
                 if(i==0||i==5||j==0||j==8){
                     //边界方块
                     inv.setItem(i*9+j,glass);
@@ -120,7 +146,33 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
         //保护箱子GUI
         Player player = (Player) event.getWhoClicked();
         InventoryView inv = player.getOpenInventory();
-        if(inv.getTitle().equals("§a[§b每日任务§a]§f"))event.setCancelled(true);
+        if(inv.getTitle().equals("§a[§b每日任务§a]§f")) {
+            event.setCancelled(true);
+            if(event.getCurrentItem().getItemMeta().getDisplayName().equals("§a每日任务奖励")){
+                //点击的是奖励领取箱子
+                if(!RewardManager.isRewardToday(player.getName())){
+                    if(RewardManager.givePlayerDailyTaskReward(player.getName())){
+                        //重新放置奖励领取箱子
+                        ItemStack stack = new ItemStack(Material.CHEST);
+                        ItemMeta cheat_meta = stack.getItemMeta();
+                        cheat_meta.setDisplayName("§a每日任务奖励");
+                        List<String> lore = new ArrayList<>();
+                        lore.add("§a-------------------");
+                        lore.add("§f奖励内容:");
+                        for (String s : ConfigManager.rewards_lore) {
+                            lore.add("   §f"+s);
+                        }
+                        lore.add("§a-------------------");
+                        lore.add("§a状态: "+"§a已领取");
+                        cheat_meta.setLore(lore);
+                        stack.setItemMeta(cheat_meta);
+                        inv.setItem(5*9 + 4,stack);
+                    }
+                }
+
+            }
+
+        }
     }
 
     /**
@@ -130,10 +182,6 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
      * @return 解析完成后的lore字符串
      * */
     private static String loreAnalysis(PlayerTask task,String lore){
-        //TODO Lore变量解析
-        //
-        //
-
         switch (task.task_type){
             case "kill":
             case "get":
@@ -146,15 +194,14 @@ public class PlayerTaskGUI implements CommandExecutor, Listener {
                 lore = lore.replaceAll("%finished%",task.args.get(2));
                 break;
             }
-            case "fish":{
+            case "fish":
+            case "enchant":{
                 lore = lore.replaceAll("%need%",task.args.get(0));
                 lore = lore.replaceAll("%finished%",task.args.get(1));
                 break;
             }
 
-
         }
-
         return lore;
     }
 

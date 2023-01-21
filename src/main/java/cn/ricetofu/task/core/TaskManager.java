@@ -87,7 +87,10 @@ public class TaskManager {
         }
 
         //发送消息提示玩家
-        if(all_finish)Bukkit.getPlayer(player_id).sendMessage(MessageManager.header+MessageManager.task_finished);
+        if(all_finish) {
+            Bukkit.getPlayer(player_id).sendMessage(MessageManager.header + MessageManager.task_finished);
+            PlayerDataManager.playerDataMap.get(player_id).last_finished_date = PlayerDataManager.sdf.format(new Date());//更新完成时间
+        }
         if(all_finish&&ConfigManager.auto_reward){//完成了所有任务且开启了自动领取奖励
 
             //给玩家完成奖励
@@ -156,7 +159,7 @@ public class TaskManager {
         //先从大到小的顺序排列
         //list.sort(Comparator.comparingInt(o -> o.weight));
 
-        //TODO 打乱算法
+        //TODO 打乱算法还没写捏
         //自定义权重打乱算法
         Collections.shuffle(list);
 
@@ -185,7 +188,7 @@ public class TaskManager {
         Collection<Task> values = all_tasks.values();
         List<Task> list = new ArrayList<>(values);
         List<PlayerTask> result = new ArrayList<>();
-        //TODO 打乱算法
+        //TODO 打乱算法还没写捏
         //自定义权重打乱算法
         Collections.shuffle(list);
         for (Task task : list) {
@@ -210,6 +213,19 @@ public class TaskManager {
         Set<String> wrong_tasks = new HashSet<>();
         for (String k : all_tasks.keySet()) {
             Task v = all_tasks.get(k);
+            //主要参数校验
+            if(v.weight==null||v.weight<1||v.weight>100000){
+                logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务weight属性值错误,应该为1-100000的正整数,而不是:"+v.weight);
+                wrong_tasks.add(k);
+                continue;
+            }
+            if(Material.matchMaterial(v.display)==null){
+                logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务display属性值错误,无法匹配一个id/名字为:"+v.display+"的物品");
+                wrong_tasks.add(k);
+                continue;
+            }
+
+            //type参数校验
             String[] s = v.type.split(" ");
             String type = s[0];
             switch (type){
@@ -245,7 +261,8 @@ public class TaskManager {
                     }
                     break;
                 }
-                case "fish":{//钓鱼任务
+                case "fish":
+                case "enchant":{//钓鱼,附魔任务
                     //参数长度校验
                     if(s.length!=2){
                         logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数个数错误!应为1个，实有"+(s.length-1)+"个");
@@ -317,6 +334,8 @@ public class TaskManager {
 
     /**
      * 判断传入的字符串是否是一个数字字符串
+     * @param s 传入字符串
+     * @return 是否是数字字符串
      * */
     private static boolean isNumStr(String s){
         for (int i = 0; i < s.length(); i++) {

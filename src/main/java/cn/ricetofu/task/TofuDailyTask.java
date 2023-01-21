@@ -79,6 +79,7 @@ public final class TofuDailyTask extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new Eat(),this);//食用
         Bukkit.getPluginManager().registerEvents(new Craft(),this);//合成
         Bukkit.getPluginManager().registerEvents(new Destroy(),this);//损坏
+        Bukkit.getPluginManager().registerEvents(new Enchant(),this);//附魔
 
         //指令注册
         Bukkit.getPluginCommand("task").setExecutor(new PlayerTaskGUI());//task指令，打开一个箱子GUI

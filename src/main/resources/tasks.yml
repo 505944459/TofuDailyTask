@@ -5,7 +5,7 @@
 
 1:
   name: 采矿时间到!
-  display: 1
+  display: 15
   weight: 100
   lore:
    - 挖掘%need%个铁矿石
@@ -32,7 +32,7 @@
 
 4:
   name: 钓鱼
-  display: 3
+  display: 346
   weight: 100
   lore:
     - 成功钓鱼%need%次
@@ -41,7 +41,7 @@
 
 5:
   name: 杀姜丝
-  display: 3
+  display: 367
   weight: 100
   lore:
     - 成功击杀%need%只姜丝
@@ -74,3 +74,12 @@
     - 玩坏%need%个打火石
     - 你现在已经玩坏了%finished%个
   type: destroy flint_and_steel 2
+
+9:
+  name: 附魔师
+  display: 116
+  weight: 100
+  lore:
+    - 进行%need%次附魔
+    - 你现在已经完成了%finished%次
+  type: enchant 3

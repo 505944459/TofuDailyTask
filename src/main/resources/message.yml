@@ -8,7 +8,7 @@ get-task: 又是新的一天啦~已经为你自动领取每日任务,输入/task
 task-finish-one: 你完成了一个每日任务:%task_name%
 
 #任务完成提示
-task-finished: 你成功完成了今天的每日任务!
+task-finished: 你成功完成了今天的每日任务!没有自动领取奖励请使用/task进入菜单领取
 
 #获取奖励提示
 get-reward: 你成功领取了每日任务奖励~

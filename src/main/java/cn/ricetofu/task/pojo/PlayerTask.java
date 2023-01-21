@@ -57,16 +57,15 @@ public class PlayerTask {
                 args.add("0");//已经完成的数量
                 break;
             }
-            case "fish":{
+            case "fish":
+            case "enchant":{
                 String[] s = type.split(" ");
                 args.add(s[1]);//需要完成的数量
                 args.add("0");//已经完成的数量
                 break;
             }
 
-
         }
-
 
     }
 
