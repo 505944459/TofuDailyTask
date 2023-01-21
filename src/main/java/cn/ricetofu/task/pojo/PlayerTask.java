@@ -25,7 +25,7 @@ public class PlayerTask {
     //任务的参数，一般在任务进行中会使用，用于保存任务的进度等
     public List<String> args = new ArrayList<>();
 
-
+    //构造
     public PlayerTask(Task task){
         this.task_id = task.id;
         this.task_type = task.type.split(" ")[0];

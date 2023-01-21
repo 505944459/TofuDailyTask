@@ -18,7 +18,7 @@ public class PlayerQuite implements Listener {
     public void playerExit(PlayerQuitEvent event){
         //保存到本地或数据库
         if(!MysqlManager.enable)PlayerDataManager.saveOneLocal(TofuDailyTask.data_file,event.getPlayer().getName());
-        else {}//TODO
+        else MysqlManager.saveOne(event.getPlayer().getName());
         //删除内存中的数据
         TaskManager.player_tasks.remove(event.getPlayer().getName());
         PlayerDataManager.playerDataMap.remove(event.getPlayer().getName());

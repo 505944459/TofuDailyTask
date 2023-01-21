@@ -17,7 +17,7 @@ import java.util.HashMap;
 public class PlayerDataManager {
 
     private static Gson json = new Gson();//json操作对象
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     public static HashMap<String,SavedPlayerData> playerDataMap = new HashMap<>();
 
     /**
@@ -73,7 +73,7 @@ public class PlayerDataManager {
     }
 
     /**
-     * 保存内存中所有的玩家数据到本地的json文件中，不建议使用，建议单个单个保存
+     * 保存内存中所有的玩家数据到本地的json文件中
      * @param file 保存到的文件目录对象
      * */
     public static void saveLocal(File file){

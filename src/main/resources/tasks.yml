@@ -1,14 +1,15 @@
 #
 # 每日任务的随机小任务表
+# 帮助文档详见: help.md
 #
 
-1: #任务的id，可以为任何字符，但每个任务的id不能出现重复!
-  name: 采矿时间到! #任务的名称
-  display: 1 #在任务菜单显示的方块ID
-  weight: 100 #任务的权重，可以为int（-2^31-1 -- 2^31-1 ）范围的数字,数字越大该任务随机时抽到的概率就会越大
-  lore: #任务的描述，多个文字建议换行，支持用 %变量名% 表示一个变量，非 PlaceHolder变量，具体变量名见本插件说明
-   - 挖掘16个铁矿石
-   - 你现在已经完成了%amount%个
+1:
+  name: 采矿时间到!
+  display: 1
+  weight: 100
+  lore:
+   - 挖掘%need%个铁矿石
+   - 你现在已经完成了%finished%个
   type: break 15 16
 
 2:
@@ -16,8 +17,8 @@
   display: 1
   weight: 100
   lore:
-    - 放置16个石头
-    - 你现在已经挖了%amount%个
+    - 放置%need%个石头
+    - 你现在已经挖了%finished%个
   type: place 1 16
 
 3:
@@ -26,7 +27,7 @@
   weight: 100
   lore:
     - 获取16个泥土
-    - 你现在已经获取%amount%个
+    - 你现在已经获取%finished%个
   type: get 3 16
 
 4:
@@ -34,8 +35,8 @@
   display: 3
   weight: 100
   lore:
-    - 成功钓鱼一次
-    - 你现在已经成功%amount%次
+    - 成功钓鱼%need%次
+    - 你现在已经成功%finished%次
   type: fish 1
 
 5:
@@ -43,6 +44,6 @@
   display: 3
   weight: 100
   lore:
-    - 成功击杀三只姜丝
-    - 你现在已经成功%amount%次
-  type: kill 54 3
+    - 成功击杀%need%只姜丝
+    - 你现在已经成功%finished%次
+  type: kill zombie 3

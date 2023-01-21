@@ -6,8 +6,10 @@ import cn.ricetofu.task.pojo.PlayerTask;
 import cn.ricetofu.task.pojo.SavedPlayerData;
 import cn.ricetofu.task.pojo.Task;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -22,7 +24,7 @@ import java.util.logging.Logger;
 public class TaskManager {
 
     //所有任务的列表
-    private static Map<String,Task> all_tasks = new HashMap<>();
+    public static Map<String,Task> all_tasks = new HashMap<>();
 
     //玩家以及玩家的每日任务map,这个表具有时效性，只会存储当天的玩家每日任务!
     public static Map<String, List<PlayerTask>> player_tasks = new HashMap<>();
@@ -56,7 +58,6 @@ public class TaskManager {
         }
         //任务配置正确性校验
         taskCheck();
-        logger.info("tasks.yml加载完成!!");
         return true;
     }
 
@@ -71,42 +72,42 @@ public class TaskManager {
         for (PlayerTask playerTask : playerTasks) {
             if(playerTask.task_id.equals(id)){
                 playerTask.isFinish = true;
-                Bukkit.getPlayer(player_id).sendMessage("§a[§b每日任务§a]§f你完成了一个每日任务: " +all_tasks.get(id).name);
+                Bukkit.getPlayer(player_id).sendMessage(MessageManager.header+MessageManager.task_finish_one.replaceAll("%task_name%",all_tasks.get(playerTask.task_id).name));
+                //检测这个任务是否有单独奖励需要给玩家
+                if(all_tasks.get(playerTask.task_id).rewards!=null&&all_tasks.get(playerTask.task_id).rewards.size()!=0){
+                    if (RewardManager.givePlayerTaskReward(player_id,playerTask.task_id)) {
+                        // TODO
+
+                    }else {
+
+                    }
+                }
             }
             if(!playerTask.isFinish)all_finish = false;
         }
-        if(all_finish){
-            //发送消息提示玩家
-            Bukkit.getPlayer(player_id).sendMessage("§a[§b每日任务§a]§f你已经完成了所有的每日任务~~~");
+
+        //发送消息提示玩家
+        if(all_finish)Bukkit.getPlayer(player_id).sendMessage(MessageManager.header+MessageManager.task_finished);
+        if(all_finish&&ConfigManager.auto_reward){//完成了所有任务且开启了自动领取奖励
+
             //给玩家完成奖励
-            if (!givePlayerDailyTaskReward(player_id)) {
-                //如果没有成功给他，则证明玩家离线或者背包空间不足，可以下次直接使用命令手动获取
-                Bukkit.getPlayer(player_id).sendMessage("§a[§b每日任务§a]§f似乎没有自动成功领取奖励？背包空间不足？");
-                Bukkit.getPlayer(player_id).sendMessage("§a[§b每日任务§a]§f请清空背包使用/task reward 领取哦~");
+            if (!RewardManager.givePlayerDailyTaskReward(player_id)) {
+                //如果没有成功给他，则证明玩家离线或者其他原因，可以下次直接使用命令手动获取
+                Bukkit.getPlayer(player_id).sendMessage(MessageManager.header+MessageManager.get_reward_fail);
+                logger.warning(TofuDailyTask.console_header+"玩家:"+player_id+"尝试领取每日奖励而没有成功");
             }
+            /*
+
             //给玩家增加累计完成次数
             SavedPlayerData savedPlayerData = PlayerDataManager.playerDataMap.get(player_id);
             savedPlayerData.finished_times = savedPlayerData.finished_times +1;
+            savedPlayerData.last_finished_date = PlayerDataManager.sdf.format(new Date());//修改上次完成的时间
             //立即保存一次
             if(!MysqlManager.enable)PlayerDataManager.saveOneLocal(TofuDailyTask.data_file,player_id);//本地保存
-            else {}//mysql保存
+            else MysqlManager.saveOne(player_id);//Mysql保存
+
+             */
         }
-    }
-
-    /**
-     * 给一个指定玩家每日任务的完成奖励
-     * */
-    private static boolean givePlayerDailyTaskReward(String player_id){
-
-
-        return false;
-    }
-
-    /**
-     * 检查目前插件已经加载的任务，主要是看参数有没有配置正确等……
-     * */
-    private static void taskCheck(){
-
     }
 
     /**
@@ -116,12 +117,13 @@ public class TaskManager {
      * */
     public static boolean getDailyTask(String player_id){
         if(!player_tasks.containsKey(player_id)){
-            //接取每日任务,这里需要写一个随机算法
+
+            //分配配置文件里面个数的每日小任务
+            List<PlayerTask> playerTasks = getRandomTasksByWeight(ConfigManager.small_tasks);
 
 
-            List<PlayerTask> playerTasks = new ArrayList<>();
-            for (Task task : all_tasks.values()) {
-                playerTasks.add(new PlayerTask(task));
+            if(playerTasks==null){//没有返回值诶~~什么情况捏~
+                return false;
             }
             player_tasks.put(player_id,playerTasks);
 
@@ -139,6 +141,185 @@ public class TaskManager {
         }
 
         return false;
+    }
+
+    /**
+     * 按照权重获取指定个数的随机任务
+     * @param count 数量
+     * @return 获取到的任务表(但返回的列表长度不一定为count)
+     * */
+    public static List<PlayerTask> getRandomTasksByWeight(int count){
+        if(count==0)return null;
+        Collection<Task> values = all_tasks.values();
+        List<Task> list = new ArrayList<>(values);
+
+        //先从大到小的顺序排列
+        //list.sort(Comparator.comparingInt(o -> o.weight));
+
+        //TODO 打乱算法
+        //自定义权重打乱算法
+        Collections.shuffle(list);
+
+        List<PlayerTask> result = new ArrayList<>();
+
+        for (Task task : list) {
+            result.add(new PlayerTask(task));
+            count--;
+            if(count==0)break;
+        }
+        if(count!=0){
+            logger.warning(TofuDailyTask.console_header+"只能给玩家:"+(result.size())+"个任务!还缺少:"+count+"个,是否缺少任务配置？");
+        }
+        return result;
+    }
+
+    /**
+     * 按照权重获取指定个数的随机任务+去掉had表里已经存在的任务id的任务
+     * @param had 排除在外的任务id的列表
+     * @param count 数量
+     * @return 获取到的任务表
+     * */
+    public static List<PlayerTask> getRandomTasksByWeight(List<PlayerTask> had,int count){
+        if(count==0)return null;
+
+        Collection<Task> values = all_tasks.values();
+        List<Task> list = new ArrayList<>(values);
+        List<PlayerTask> result = new ArrayList<>();
+        //TODO 打乱算法
+        //自定义权重打乱算法
+        Collections.shuffle(list);
+        for (Task task : list) {
+            if(!had.contains(task.id)){
+                result.add(new PlayerTask(task));
+                count--;
+                if(count==0)break;;
+            }
+        }
+        if(count!=0){
+            logger.warning(TofuDailyTask.console_header+"只能给玩家:"+(result.size())+"个任务!还缺少:"+count+"个,是否缺少任务配置？");
+        }
+        return result;
+    }
+
+
+    /**
+     * 检查目前插件已经加载的任务，主要是看参数有没有配置正确等，并在控制台予以提示
+     * */
+    private static void taskCheck(){
+        int total = all_tasks.size();
+        Set<String> wrong_tasks = new HashSet<>();
+        for (String k : all_tasks.keySet()) {
+            Task v = all_tasks.get(k);
+            String[] s = v.type.split(" ");
+            String type = s[0];
+            switch (type){
+                case "break":
+                case "place":
+                case "get": {//破坏，放置，获取任务
+                    //参数长度校验
+                    if(s.length!=3){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数个数错误!应为2个，实有"+(s.length-1)+"个");
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //参数一校验，是否存在那么一种方块
+                    if(Material.matchMaterial(s[1])==null){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数1错误!无法匹配到一个名字/id为:"+s[1]+"的物品");
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //参数二校验，是否是一个数字
+                    if(!isNumStr(s[2])){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数2错误!它应该是一个数字，而不是:"+s[2]);
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //数字格式
+                    if(Integer.parseInt(s[2])<=0){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数2错误!它应该是一个大于0的数字，而不是:"+s[2]);
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    break;
+                }
+                case "fish":{//钓鱼任务
+                    //参数长度校验
+                    if(s.length!=2){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数个数错误!应为1个，实有"+(s.length-1)+"个");
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //参数一校验
+                    if(!isNumStr(s[1])){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数1错误!它应该是一个数字，而不是:"+s[1]);
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //数字格式
+                    if(Integer.parseInt(s[1])<=0){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数1错误!它应该是一个大于0的数字，而不是:"+s[1]);
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    break;
+                }
+                case "kill":{//击杀任务
+                    //参数长度校验
+                    if(s.length!=3){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数个数错误!应为2个，实有"+(s.length-1)+"个");
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //参数一校验，匹配实体类型
+                    if(EntityType.fromName(s[1])==null){
+                        if(isNumStr(s[1])){
+                            if(EntityType.fromId(Integer.parseInt(s[1]))==null){
+                                logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数1错误，无法匹配一个名字/id为:"+s[1]+"的实体");
+                                wrong_tasks.add(k);
+                                break;
+                            }
+                        }else {
+                            logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数1错误，无法匹配一个名字/id为:"+s[1]+"的实体");
+                            wrong_tasks.add(k);
+                            break;
+                        }
+                    }
+                    //参数二校验，是否是数字
+                    if(!isNumStr(s[2])){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数2错误!它应该是一个数字，而不是:"+s[2]);
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    //数字格式
+                    if(Integer.parseInt(s[2])<=0){
+                        logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务参数2错误!它应该是一个大于0的数字，而不是:"+s[2]);
+                        wrong_tasks.add(k);
+                        break;
+                    }
+                    break;
+                }
+                default:{
+                    logger.warning(TofuDailyTask.console_header+"id为:"+v.id+"的任务类型错误,未能成功匹配一个名为:"+s[0]+"的事件类型，他真的被插件支持吗");
+                    wrong_tasks.add(k);
+                }
+            }
+        }
+        //删除错误的任务
+        wrong_tasks.forEach( s ->{
+            all_tasks.remove(s);
+        });
+        //加载提示
+        logger.info(TofuDailyTask.console_header +"共成功加载了:§a"+all_tasks.size()+"§f个任务!加载失败了:§c"+(total-all_tasks.size())+"§f个");
+    }
+
+    /**
+     * 判断传入的字符串是否是一个数字字符串
+     * */
+    private static boolean isNumStr(String s){
+        for (int i = 0; i < s.length(); i++) {
+            if(s.charAt(i)>'9'||s.charAt(i)<'0')return false;
+        }
+        return true;
     }
 
 }

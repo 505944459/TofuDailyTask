@@ -2,6 +2,8 @@ package cn.ricetofu.task.core;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.List;
+
 /**
  * @Author: RiceTofu123
  * @Date: 2023-01-13
@@ -13,6 +15,16 @@ public class ConfigManager {
     private static FileConfiguration fileConfiguration = null;
     //插件版本
     public static String version = null;
+    //每日任务的小任务个数
+    public static Integer small_tasks = 0;
+    //每日任务可以刷新的次数
+    public static Integer change_times = 0;
+    //每日任务完成过后的奖励列表
+    public static List<String> rewards = null;
+    //每日任务的展示信息
+    public static List<String> rewards_lore = null;
+    //是否在任务完成后自动领取每日任务奖励
+    public static boolean auto_reward = false;
     //是否开启mysql
     public static boolean mysql = false;
     //mysql配置
@@ -25,6 +37,12 @@ public class ConfigManager {
         fileConfiguration = configuration;
         //加载config配置文件
         version = fileConfiguration.getString("version");
+        small_tasks = fileConfiguration.getInt("tasks");
+        change_times = fileConfiguration.getInt("change-times");
+        rewards = fileConfiguration.getStringList("rewards");
+        rewards_lore = fileConfiguration.getStringList("rewards-lore");
+        auto_reward = fileConfiguration.getBoolean("auto-rewards");
+
         mysql = fileConfiguration.getBoolean("mysql");
         if(mysql){
             //加载mysql配置
